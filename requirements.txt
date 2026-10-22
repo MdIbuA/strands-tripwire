@@ -1,0 +1,7 @@
+strands-agents>=1.61
+strands-decider>=0.1
+boto3>=1.35
+fastapi>=0.115
+uvicorn>=0.30
+openai>=1.50
+aws-bedrock-token-generator>=1.0

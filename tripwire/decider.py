@@ -1,0 +1,108 @@
+"""A tiny synchronous client for a running `strands-decider serve` endpoint.
+
+Adapted from strands-labs/strands-decider `examples/strands/_client.py` (Apache-2.0).
+Stdlib only, so the patterns in this package can be dropped into any agent without
+adding a dependency.
+
+    strands-decider serve StrandsAgents/strands-decider-2B-qwen3.5-v1-2610 --port 8099
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import threading
+import time
+import urllib.error
+import urllib.request
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+from typing import Any
+
+DEFAULT_URL = os.environ.get("STRANDS_DECIDER_URL", "http://127.0.0.1:8099")
+
+
+class DeciderUnavailable(RuntimeError):
+    """Nothing is answering at the decider URL."""
+
+
+@dataclass
+class DeciderStats:
+    calls: int = 0
+    input_tokens: int = 0
+    latencies_ms: list[float] = field(default_factory=list)
+
+    @property
+    def median_ms(self) -> float:
+        xs = sorted(self.latencies_ms)
+        return xs[len(xs) // 2] if xs else 0.0
+
+
+class Decider:
+    """One state, many typed questions, one round trip.
+
+    The state is encoded once and shared by every question in the request, so ask
+    everything you need about one state in a single `ask` call.
+    """
+
+    def __init__(self, url: str = DEFAULT_URL, timeout: float = 120.0) -> None:
+        self.url = url.rstrip("/")
+        self.timeout = timeout
+        self.stats = DeciderStats()
+        self.last_latency_ms: float = 0.0
+        self._lock = threading.Lock()  # the server is best driven one request at a time
+
+    # ---- question builders -------------------------------------------------
+
+    @staticmethod
+    def noul(instructions: str, true: str | None = None, false: str | None = None) -> dict[str, Any]:
+        """Yes/no question. The answer is P(true) in 0..1."""
+        q: dict[str, Any] = {"type": "noul", "instructions": instructions}
+        if true or false:
+            q["criteria"] = {"true": true, "false": false}
+        return q
+
+    @staticmethod
+    def choice(instructions: str, options: Mapping[str, str | None]) -> dict[str, Any]:
+        """Pick one of N. `options` maps option name -> what it means."""
+        return {"type": "choice", "instructions": instructions, "criteria": dict(options)}
+
+    @staticmethod
+    def score(instructions: str, levels: list[str]) -> dict[str, Any]:
+        """Rate on an ordered rubric, lowest level first."""
+        return {"type": "score", "instructions": instructions, "criteria": list(levels)}
+
+    # ---- asking -----------------------------------------------------------
+
+    def ask(self, state: Any, questions: Mapping[str, dict[str, Any]]) -> dict[str, Any]:
+        """Evaluate `state` against `questions`; answers come back under the same keys."""
+        return self.ask_timed(state, questions)[0]
+
+    def ask_timed(self, state: Any, questions: Mapping[str, dict[str, Any]]) -> tuple[dict[str, Any], float]:
+        """Like `ask`, plus the server-reported latency in ms for this request."""
+        body = json.dumps({"state": state, "questions": dict(questions)}).encode()
+        req = urllib.request.Request(
+            f"{self.url}/v1/systemone", data=body, headers={"content-type": "application/json"}
+        )
+        t0 = time.perf_counter()
+        try:
+            with self._lock, urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                payload = json.loads(resp.read())
+        except urllib.error.URLError as exc:
+            raise DeciderUnavailable(
+                f"no strands-decider server at {self.url} ({exc.reason}). Start one with:\n"
+                "  strands-decider serve StrandsAgents/strands-decider-2B-qwen3.5-v1-2610 --port 8099"
+            ) from exc
+        ms = float(payload.get("latency_ms") or (time.perf_counter() - t0) * 1000)
+        self.last_latency_ms = ms
+        self.stats.calls += 1
+        self.stats.input_tokens += payload.get("usage", {}).get("input_tokens", 0)
+        self.stats.latencies_ms.append(ms)
+        return payload["answers"], ms
+
+    def health(self) -> dict[str, Any]:
+        try:
+            with urllib.request.urlopen(f"{self.url}/health", timeout=10) as resp:
+                return json.loads(resp.read())
+        except urllib.error.URLError as exc:
+            raise DeciderUnavailable(f"no strands-decider server at {self.url}") from exc
