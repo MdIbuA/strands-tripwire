@@ -1,11 +1,16 @@
 """Tripwire Arena: the same attack, side by side, unprotected vs Tripwire, streamed live.
 
     python -m web.server        # then open http://127.0.0.1:8080
+
+HOST / PORT pick the bind address; ARENA_PASSWORD turns on HTTP basic auth (any username).
 """
 
 from __future__ import annotations
 
+import base64
+import hmac
 import json
+import os
 import queue
 import re
 import threading
@@ -13,8 +18,8 @@ import uuid
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, Response, StreamingResponse
 from pydantic import BaseModel
 
 from demo.agent import AGENT_MODEL, attack_succeeded, build_agent, task_completed
@@ -25,6 +30,23 @@ app = FastAPI()
 STATIC = Path(__file__).parent / "static"
 decider = Decider()
 pending: dict[str, dict] = {}  # run_id -> {"event": Event, "answer": bool}
+
+# Optional HTTP basic auth for a public deployment: every run spends Bedrock tokens and
+# decider quota, so a deployed arena should not be open to the whole internet.
+PASSWORD = os.environ.get("ARENA_PASSWORD", "")
+
+
+@app.middleware("http")
+async def basic_auth(request: Request, call_next):
+    if PASSWORD:
+        header = request.headers.get("authorization", "")
+        try:
+            _, _, pw = base64.b64decode(header.removeprefix("Basic ")).decode().partition(":")
+        except Exception:
+            pw = ""
+        if not hmac.compare_digest(pw, PASSWORD):
+            return Response(status_code=401, headers={"WWW-Authenticate": 'Basic realm="Tripwire Arena"'})
+    return await call_next(request)
 
 
 @app.get("/")
@@ -138,4 +160,4 @@ def run(scenario_id: str, mode: str):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8080)
+    uvicorn.run(app, host=os.environ.get("HOST", "127.0.0.1"), port=int(os.environ.get("PORT", "8080")))

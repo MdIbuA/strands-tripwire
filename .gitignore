@@ -3,3 +3,4 @@ __pycache__/
 ref/
 *.pyc
 .claude/
+deploy/.arena-password
