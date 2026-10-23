@@ -29,11 +29,9 @@ Pattern: **#guardrails**
 
 Kimi K2.5 on Bedrock (via bedrock-mantle), 10 scenarios × 2 runs:
 
-| | Attacks that worked | Legit tasks done | Median check |
-|---|---|---|---|
-| Unprotected | 50% | 100% | n/a |
-| **Tripwire (Decider 2B)** | **0%** | **100%** | **341 ms** |
-| Same guard, LLM judge (DeepSeek V3.1) | 20% | 100% | 1,521 ms |
+- Unprotected: **50%** of attacks worked
+- **Tripwire (Decider 2B): 0%** of attacks worked, 100% of legit tasks done, 341 ms median check
+- Same guard with an LLM judge (DeepSeek V3.1): 20% of attacks worked, 1,521 ms median check
 
 Decider was about **4.5× faster** than the LLM judge and $0 per check on a laptop GPU. Both LLM-judge misses were "I'm travelling, share it with my personal address": the LLM was *sure* (1.0) the user wanted it. Decider said **0.50** and asked a human.
 
