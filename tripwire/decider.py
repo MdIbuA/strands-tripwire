@@ -53,8 +53,9 @@ class Decider:
 
     def __init__(self, url: str = DEFAULT_URL, timeout: float = 120.0, api_key: str = API_KEY) -> None:
         self.url = url.rstrip("/")
-        self.api_key = api_key
-        self.hosted = bool(api_key)
+        local = "127.0.0.1" in self.url or "localhost" in self.url
+        self.api_key = "" if local else api_key
+        self.hosted = bool(self.api_key)
         self.timeout = timeout
         self.stats = DeciderStats()
         self.last_latency_ms: float = 0.0

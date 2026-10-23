@@ -4,8 +4,9 @@ Tools act on a sandboxed in-memory World, so attacks "succeed" only inside the
 sandbox. Three modes, identical agent, identical system prompt:
 
     none      -- no guard (what most agents ship today)
-    tripwire  -- ContextQuarantine + ProvenanceGuard on Strands Decider 2B
-    llm_judge -- ProvenanceGuard policy with a Bedrock LLM as the classifier (baseline)
+    tripwire   -- ContextQuarantine + ProvenanceGuard on Strands Decider 2B
+    guard_only -- ProvenanceGuard alone on Strands Decider 2B
+    llm_judge  -- the same ProvenanceGuard, with a Bedrock LLM as the classifier (baseline)
 """
 
 from __future__ import annotations
@@ -193,11 +194,13 @@ def build_agent(
     interventions: list[InterventionHandler] = [Observer(emit)]
     guard = quarantine = None
     on_decision = lambda d: emit("guard_decision", d.__dict__)
-    if mode == "tripwire":
+    if mode in ("tripwire", "guard_only"):
         decider = decider or Decider()
-        quarantine = ContextQuarantine(decider, READER_TOOLS, on_chunk=lambda v: emit("chunk_verdict", v.__dict__))
+        if mode == "tripwire":
+            quarantine = ContextQuarantine(decider, READER_TOOLS, on_chunk=lambda v: emit("chunk_verdict", v.__dict__))
+            interventions.append(quarantine)
         guard = ProvenanceGuard(decider, SIDE_EFFECT_TOOLS, approver=approver, on_decision=on_decision)
-        interventions += [quarantine, guard]
+        interventions.append(guard)
     elif mode == "llm_judge":
         from tripwire.llm_judge import LlmJudgeGuard
         guard = judge or LlmJudgeGuard(JUDGE_MODEL, REGION)

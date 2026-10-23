@@ -36,7 +36,7 @@ own work can be argued with. A pointer head can't.
 
 ## Architecture
 
-![architecture](arena.png)
+![architecture](arena.jpg)
 
 - **Amazon Bedrock** (Kimi K2.5 through Bedrock's OpenAI-compatible `bedrock-mantle` endpoint, via Strands `OpenAIModel(bedrock_mantle_config=...)`) does all the generative work:
   reading, summarizing, planning, writing replies.

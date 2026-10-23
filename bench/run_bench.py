@@ -28,7 +28,7 @@ def pct(xs: list[bool]) -> str:
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--runs", type=int, default=3)
-    p.add_argument("--modes", default="none,tripwire,llm_judge")
+    p.add_argument("--modes", default="none,tripwire,guard_only,llm_judge")
     a = p.parse_args()
     modes = a.modes.split(",")
 
@@ -39,7 +39,7 @@ def main() -> None:
         for mode in modes:
             for i in range(a.runs):
                 kw = {"approver": informed_user_approver(sc)}
-                if mode == "tripwire":
+                if mode in ("tripwire", "guard_only"):
                     kw["decider"] = decider
                 if mode == "llm_judge":
                     kw["judge"] = judge
