@@ -19,9 +19,12 @@ action, and never the emails, pages or documents the agent read.** Injected text
 with a judge that never reads it. And Decider returns a number, not prose, so plain Python `if`
 statements decide what happens.
 
-| The attack the agent will read | Tripwire quarantines it live | Unsure? Ask the human |
-|---|---|---|
-| ![setup](docs/arena-setup.jpg) | ![arena](docs/arena.jpg) | ![confirm](docs/arena-confirm.jpg) |
+![Tripwire Arena: the same attack, unprotected vs Tripwire](docs/arena.png)
+
+<details><summary>When Decider is unsure, Tripwire asks a human</summary>
+
+![Ask a human](docs/arena-confirm.png)
+</details>
 
 ## Live demo on AWS
 

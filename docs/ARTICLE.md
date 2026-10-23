@@ -21,9 +21,7 @@ That's **indirect prompt injection**, the top risk on the OWASP Top 10 for LLM a
 model isn't stupid. It just can't tell *my* voice from the voice of the data it reads, because
 both arrive as text in the same context window.
 
-![The attack, as the agent will read it](arena-setup.jpg)
-
-![Tripwire quarantines the planted paragraph at 0.93](arena.jpg)
+![Tripwire Arena: the same attack, unprotected vs Tripwire](arena.png)
 
 ## The idea: a judge that never reads the attacker's text
 
@@ -72,7 +70,7 @@ The calibrated confidence is what makes this a policy rather than a guess. The g
 a human. *"Sarah asked for the deck, but share it with sarah.kim.travel@gmail-secure.co?"*
 scored **0.50**, so Tripwire asks instead of acting or refusing.
 
-![Decider's calibrated score lands in the ask-a-human band](arena-confirm.jpg)
+![Decider's calibrated score lands in the ask-a-human band](arena-confirm.png)
 
 It's deployed on AWS too: a free-tier EC2 instance runs the arena, the agent calls Bedrock
 through an IAM role scoped to Bedrock Mantle inference, and one script (`deploy/deploy_ec2.py`)
