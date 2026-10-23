@@ -2,7 +2,6 @@
 
 *Tags: #strands-decider-2b #guardrails*
 
-> **TODO before publishing:** add the demo video link (`[[Demo video link]]`).
 
 ## The email that robbed my agent
 
@@ -157,4 +156,4 @@ Decider 2B is experimental, the thresholds were tuned by hand on ten scenarios, 
 trusts the user's own messages. It's defense in depth, not a guarantee. But it's a layer an
 attacker's text can't talk its way past, at about a fifth of a second per decision.
 
-[[Demo video link]]
+**Demo video:** https://drive.google.com/file/d/18U4uobEAtmgk1Oxl7cd2BRHGBj8ben3q/view?usp=sharing
