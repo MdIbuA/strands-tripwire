@@ -70,8 +70,6 @@ The calibrated confidence is what makes this a policy rather than a guess. The g
 a human. *"Sarah asked for the deck, but share it with sarah.kim.travel@gmail-secure.co?"*
 scored **0.50**, so Tripwire asks instead of acting or refusing.
 
-![Decider's calibrated score lands in the ask-a-human band](arena-confirm.png)
-
 It's deployed on AWS too: a free-tier EC2 instance runs the arena, the agent calls Bedrock
 through an IAM role scoped to Bedrock Mantle inference, and one script (`deploy/deploy_ec2.py`)
 creates or destroys the whole stack.

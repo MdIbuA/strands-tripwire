@@ -21,11 +21,6 @@ statements decide what happens.
 
 ![Tripwire Arena: the same attack, unprotected vs Tripwire](docs/arena.png)
 
-<details><summary>When Decider is unsure, Tripwire asks a human</summary>
-
-![Ask a human](docs/arena-confirm.png)
-</details>
-
 ## Live demo on AWS
 
 **http://ec2-52-91-2-151.compute-1.amazonaws.com/** (password-protected, because every run spends
