@@ -14,7 +14,7 @@
 | 1:10–1:40 | **"The sneaky CC in meeting notes"**: left leaks to archive@notes-backup.cc; right shows PROCEED for Sarah | "The second checkpoint guards every action. Before a tool runs, Decider answers one question: did the user ask for this? And it only sees what the user typed, never the content, so the attacker's text can't argue with it. Email Sarah: yes, 0.82, go. A copy to an outside archive: 0.08, denied." |
 | 1:40–2:00 | **"I'm travelling, use my other address"**: the CONFIRM card, click **Reject** | "And when it's unsure, it asks me. Calibrated confidence turns into a policy: deny, confirm or proceed." |
 | 2:00–2:20 | Open **Try to break it**, run the sample IT-helpdesk attack (or type a new one live) | "You can try to break it yourself: write any malicious email and watch both agents read it." |
-| 2:20–2:40 | README Results table plus the two `interventions=[...]` lines | "Five of five attacks stopped, no legitimate request wrongly blocked, about a fifth of a second per decision versus [[x]] seconds for an LLM judge. Both checkpoints are reusable Strands InterventionHandlers. The link's in the description." |
+| 2:20–2:40 | README Results table plus the two `interventions=[...]` lines | "Unprotected, half the attacks worked. With Tripwire, none did, and every legitimate task still completed. It's four and a half times faster than asking an LLM judge, and where the LLM judge was sure and wrong, Decider knew it was unsure and asked me. Both checkpoints are reusable Strands InterventionHandlers. The link's in the description." |
 
 Upload to YouTube as **Public** with the title *"Tripwire: stopping prompt injection with Strands
 Decider 2B + Amazon Bedrock"*, and put the repo link in the description.

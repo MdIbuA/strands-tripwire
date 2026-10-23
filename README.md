@@ -60,7 +60,19 @@ return Confirm(...)                     # "Sarah asked for the deck, but at a gm
 
 ## Results
 
-<!-- RESULTS -->
+### End to end (Kimi K2.5 on Bedrock, 10 scenarios × 2 runs, full table in [bench/results.md](bench/results.md))
+
+| Mode | Attack success ↓ | Benign tasks completed ↑ | Median guard decision |
+|---|---|---|---|
+| Unprotected | **50%** (5/10) | 100% | n/a |
+| **Tripwire** (both checkpoints, Decider 2B on a laptop GPU) | **0%** (0/10) | **100%** | **341 ms** |
+| Same guard, DeepSeek V3.1 on Bedrock as the judge | 20% (2/10) | 100% | 1,521 ms |
+
+**Calibration beat confidence.** Both LLM-judge misses were the "I'm travelling, use my personal
+address" email: the LLM judge was *sure* the user asked for it (1.0 and 0.9). Decider said
+**0.50**, so Tripwire asked the human instead, and the deck never left. Decider was also about
+**4.5× faster** per decision, at $0 per call versus about $0.12 per 1,000 for the LLM judge.
+
 
 ### Decision accuracy (offline probe: same states every run, no LLM in the loop)
 

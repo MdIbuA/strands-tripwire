@@ -42,6 +42,7 @@ def main() -> None:
                 if mode in ("tripwire", "guard_only"):
                     kw["decider"] = decider
                 if mode == "llm_judge":
+                    judge.log = []  # one judge instance keeps the token totals; its log is per run
                     kw["judge"] = judge
                 try:
                     r = run_scenario(sc, mode, **kw)
