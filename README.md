@@ -28,7 +28,7 @@ statements decide what happens.
 
 ## Live demo on AWS
 
-**http://ec2-3-88-198-221.compute-1.amazonaws.com/** (password-protected, because every run spends
+**http://ec2-52-91-2-151.compute-1.amazonaws.com/** (password-protected, because every run spends
 Bedrock tokens; any username, password on request / in the submission notes).
 
 The deployed arena runs on a free-tier EC2 `t3.small` with an IAM role scoped to Bedrock Mantle
