@@ -23,6 +23,15 @@ statements decide what happens.
 |---|---|---|
 | ![setup](docs/arena-setup.jpg) | ![arena](docs/arena.jpg) | ![confirm](docs/arena-confirm.jpg) |
 
+## Live demo on AWS
+
+**http://ec2-3-88-198-221.compute-1.amazonaws.com/** (password-protected, because every run spends
+Bedrock tokens; any username, password on request / in the submission notes).
+
+The deployed arena runs on a free-tier EC2 `t3.small` with an IAM role scoped to Bedrock Mantle
+inference. The agent runs on Amazon Bedrock and the Decider checks go to a hosted Decider API.
+The video and the numbers below use Decider on a local GPU.
+
 ## How it works
 
 ```
@@ -164,7 +173,19 @@ python -m bench.run_bench --runs 2
 ```
 
 Environment overrides: `TRIPWIRE_AGENT_MODEL`, `TRIPWIRE_JUDGE_MODEL`, `AWS_REGION`,
-`STRANDS_DECIDER_URL`, `DECIDER_API_KEY`.
+`STRANDS_DECIDER_URL`, `DECIDER_API_KEY`, and `ARENA_PASSWORD` (HTTP basic auth for the arena).
+
+### Deploy it on AWS (free-tier EC2)
+
+```bash
+export DECIDER_API_KEY=...            # a hosted Decider API key (a free-tier instance can't hold the model)
+python -m deploy.deploy_ec2           # IAM role, SSM settings, private S3 bundle, port-80 SG, t3.small
+python -m deploy.deploy_ec2 --destroy # remove everything it created
+```
+
+[deploy/deploy_ec2.py](deploy/deploy_ec2.py) deploys `git archive HEAD`, keeps the Decider key
+and the generated arena password in SSM SecureString parameters, and uses no SSH keys (Session
+Manager only). The server installs only `requirements-server.txt`, with no torch.
 
 ## Scenarios
 
