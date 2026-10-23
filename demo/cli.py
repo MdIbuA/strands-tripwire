@@ -25,8 +25,7 @@ def emit(kind: str, d: dict) -> None:
               f"[{d['latency_ms']:.0f} ms] {tag}")
     elif kind == "guard_decision":
         color = {"proceed": GREEN, "approved": GREEN, "deny": RED, "rejected": RED}.get(d["verdict"], YELLOW)
-        probs = " ".join(f"{k}={v:.2f}" for k, v in d["origin_probs"].items())
-        print(f"    {DIM}decider{END} origin[{probs}] grounded={d['grounded']:.2f} leak={d['leak']:.2f} "
+        print(f"    {DIM}decider{END} P(user asked for this)={d['asked']:.2f} "
               f"[{d['latency_ms']:.0f} ms] -> {color}{d['verdict'].upper()}{END} {DIM}{d['reason']}{END}")
     elif kind == "side_effect":
         print(f"  {BOLD}EXECUTED{END} {d['action']} -> {', '.join(d['recipients'])}")

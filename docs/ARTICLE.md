@@ -82,7 +82,7 @@ return Confirm(...)                                  # a human decides the grey 
 `Guide` is my favourite part. It doesn't just refuse. The model gets feedback and corrects
 course, usually by asking me the question it should have asked in the first place.
 
-### Decision 2: ContextQuarantine (after_tool_call) · the high-frequency one
+### Decision 2: ContextQuarantine (after_tool_call) · the same guardrail, on the input side
 
 Every email, web-page section and document paragraph is scored *before* it enters the LLM's
 context: "is this text talking to an AI agent rather than a human?" Chunks over the threshold

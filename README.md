@@ -1,6 +1,6 @@
 # Tripwire: a ~115 ms immune system for agents that read the internet
 
-> **Pattern: #guardrails** · also ships a #context-memory recipe · `#strands-decider-2b`
+> **Pattern: #guardrails** · `#strands-decider-2b`
 
 AI agents now read your inbox, browse the web and open your documents, and that makes
 **prompt injection** the #1 risk on the OWASP Top 10 for LLM applications. An email that says
@@ -34,7 +34,8 @@ user prompt ──► Bedrock LLM (Strands Agent) ──► tool call proposed
                                          └──────────────────────────────┘
 ```
 
-Two layers, each a reusable Strands `InterventionHandler`:
+One guardrail pattern, two checkpoints, each a reusable Strands `InterventionHandler`: one on the
+**action** side (before a tool runs) and one on the **input** side (before untrusted content reaches the LLM):
 
 | Recipe | Seam | Decider question(s) | Typed action |
 |---|---|---|---|

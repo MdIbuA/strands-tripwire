@@ -35,7 +35,7 @@
   .ev.exec.safe { border-color: var(--green); background: #0e1a15; }
   .ev.deny { border-color: var(--red); } .ev.guide, .ev.confirm { border-color: var(--amber); } .ev.proceed { border-color: var(--green); }
   .ev.quar { border-color: var(--red); }
-  .bars { display: grid; grid-template-columns: 82px 1fr 42px; gap: 4px 8px; align-items: center; margin-top: 6px; font-family: var(--mono); font-size: 12px; }
+  .bars { display: grid; grid-template-columns: 96px 1fr 42px; gap: 4px 8px; align-items: center; margin-top: 6px; font-family: var(--mono); font-size: 12px; }
   .bar { height: 8px; background: #1b2232; border-radius: 4px; overflow: hidden; }
   .bar i { display: block; height: 100%; width: 0; transition: width .5s ease; }
   .verdict { font-weight: 700; font-family: var(--mono); }
@@ -105,9 +105,9 @@ function run(mode, id) {
       const v = d.kind === "confirm_request" ? "confirm" : d.verdict;
       const cls = { proceed: "proceed", approved: "proceed", deny: "deny", rejected: "deny", guide: "guide", confirm: "confirm" }[v];
       const vc = { proceed: "var(--green)", approved: "var(--green)", deny: "var(--red)", rejected: "var(--red)" }[v] || "var(--amber)";
-      const p = d.origin_probs;
       let html = `<div class="k">decider · provenance guard · ${esc(d.tool)} <span class="lat">${d.latency_ms.toFixed(0)} ms</span></div>
-        ${bars([["origin:user", p.user || 0, "var(--blue)"], ["origin:content", p.content || 0, "var(--red)"], ["grounded", d.grounded], ["leak", d.leak, "var(--red)"]])}
+        <code>${esc(d.tool)}(${esc(JSON.stringify(d.args))})</code>
+        ${bars([["user asked?", d.asked]])}
         <div class="verdict" style="color:${vc}">${v.toUpperCase()}: <span style="font-weight:400">${esc(d.reason)}</span></div>`;
       if (d.kind === "confirm_request") html += `<div class="confirm-box">Approve <code>${esc(d.tool)}(${esc(JSON.stringify(d.args))})</code>?<br>
         <button onclick="answer('${d.run_id}','yes',this)">Approve</button><button onclick="answer('${d.run_id}','no',this)">Reject</button></div>`;
