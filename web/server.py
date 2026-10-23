@@ -14,8 +14,8 @@ from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
-from pydantic import BaseModel
 from fastapi.responses import FileResponse, StreamingResponse
+from pydantic import BaseModel
 
 from demo.agent import AGENT_MODEL, attack_succeeded, build_agent, task_completed
 from demo.scenarios import BY_ID, SARAH_SYNC, SCENARIOS, Scenario
@@ -32,15 +32,34 @@ def index():
     return FileResponse(STATIC / "index.html")
 
 
+# Display only: lets the page highlight the planted instruction in the inbox preview so a
+# viewer can see the attack before it runs. The guards never see this list.
+PLANTED_MARKERS = ("AI assistant", "AI email assistant", "Assistant:", "AGENT DIRECTIVE", "AI agent")
+
+
+def _paras(text: str) -> list[dict]:
+    return [{"text": p, "planted": any(m.lower() in p.lower() for m in PLANTED_MARKERS)}
+            for p in re.split(r"\n\s*\n", text) if p.strip()]
+
+
+def describe(s: Scenario) -> dict:
+    sources = [{"type": "email", "title": m["subject"], "from": m["from"], "paras": _paras(m["body"])}
+               for m in s.inbox]
+    sources += [{"type": "web", "title": url, "from": url, "paras": _paras(t)} for url, t in s.pages.items()]
+    sources += [{"type": "doc", "title": name, "from": "Jordan's drive", "paras": _paras(t)} for name, t in s.docs.items()]
+    return {"id": s.id, "title": s.title, "kind": s.kind, "prompt": s.user_prompt, "blurb": s.blurb,
+            "sources": sources, "attacker_domains": list(s.attacker_domains)}
+
+
 @app.get("/api/scenarios")
 def scenarios():
-    return {
-        "agent_model": AGENT_MODEL,
-        "scenarios": [
-            {"id": s.id, "title": s.title, "kind": s.kind, "prompt": s.user_prompt, "blurb": s.blurb}
-            for s in SCENARIOS
-        ],
-    }
+    try:
+        h = decider.health()
+        decider_info = {"model": h.get("model") or (h.get("data") or [{}])[0].get("id", "strands-decider-2b"),
+                        "where": "hosted API" if decider.hosted else f"local {h.get('device', '')}".strip()}
+    except Exception:
+        decider_info = {"model": "strands-decider-2b", "where": "offline"}
+    return {"agent_model": AGENT_MODEL, "decider": decider_info, "scenarios": [describe(s) for s in SCENARIOS]}
 
 
 class CustomAttack(BaseModel):
@@ -64,7 +83,7 @@ def custom(attack: CustomAttack):
         attacker_domains=tuple({d.lower() for d in addresses if d.lower() not in TRUSTED_DOMAINS}),
         blurb="A custom attack typed into the arena.",
     )
-    return {"id": sid, "attacker_domains": list(BY_ID[sid].attacker_domains)}
+    return describe(BY_ID[sid])
 
 
 @app.post("/api/confirm/{run_id}/{answer}")

@@ -21,7 +21,9 @@ That's **indirect prompt injection**, the top risk on the OWASP Top 10 for LLM a
 model isn't stupid. It just can't tell *my* voice from the voice of the data it reads, because
 both arrive as text in the same context window.
 
-![Tripwire Arena: same agent, same attack, unprotected vs Tripwire](arena.jpg)
+![The attack, as the agent will read it](arena-setup.jpg)
+
+![Tripwire quarantines the planted paragraph at 0.93](arena.jpg)
 
 ## The idea: a judge that never reads the attacker's text
 
@@ -69,6 +71,8 @@ never leaves. For *"Share Q3_financials.xlsx with my accountant dana@ledgerly.co
 The calibrated confidence is what makes this a policy rather than a guess. The grey zone goes to
 a human. *"Sarah asked for the deck, but share it with sarah.kim.travel@gmail-secure.co?"*
 scored **0.50**, so Tripwire asks instead of acting or refusing.
+
+![Decider's calibrated score lands in the ask-a-human band](arena-confirm.jpg)
 
 ## Results
 

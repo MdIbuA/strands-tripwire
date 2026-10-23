@@ -124,6 +124,11 @@ class World:
         return [read_inbox, fetch_webpage, read_document, send_email, share_file, create_calendar_event]
 
 
+def sends_to_someone(name: str, args: dict[str, Any]) -> bool:
+    """Gate only calls with recipients: a private calendar entry moves no data anywhere."""
+    return bool(args.get("to") or args.get("recipient") or args.get("attendees"))
+
+
 def bedrock_model(model_id: str) -> OpenAIModel:
     """A Strands model on Amazon Bedrock (bedrock-mantle endpoint, AWS credential chain)."""
     return OpenAIModel(bedrock_mantle_config={"region": REGION}, model_id=model_id, params={"temperature": 0.2})
@@ -199,12 +204,14 @@ def build_agent(
         if mode == "tripwire":
             quarantine = ContextQuarantine(decider, READER_TOOLS, on_chunk=lambda v: emit("chunk_verdict", v.__dict__))
             interventions.append(quarantine)
-        guard = ProvenanceGuard(decider, SIDE_EFFECT_TOOLS, approver=approver, on_decision=on_decision)
+        guard = ProvenanceGuard(decider, SIDE_EFFECT_TOOLS, guard_if=sends_to_someone,
+                                approver=approver, on_decision=on_decision)
         interventions.append(guard)
     elif mode == "llm_judge":
         from tripwire.llm_judge import LlmJudgeGuard
         guard = judge or LlmJudgeGuard(JUDGE_MODEL, REGION)
-        guard.guarded, guard.approver, guard.on_decision = SIDE_EFFECT_TOOLS, approver, on_decision
+        guard.guarded, guard.guard_if = SIDE_EFFECT_TOOLS, sends_to_someone
+        guard.approver, guard.on_decision = approver, on_decision
         interventions.append(guard)
     agent = Agent(
         model=bedrock_model(AGENT_MODEL),

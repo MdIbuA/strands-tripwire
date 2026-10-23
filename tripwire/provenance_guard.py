@@ -66,6 +66,7 @@ class ProvenanceGuard(InterventionHandler):
         *,
         proceed_at: float = 0.6,
         deny_below: float = 0.2,
+        guard_if: Callable[[str, dict[str, Any]], bool] | None = None,
         approver: Approver | None = None,
         on_decision: Callable[[GuardDecision], None] | None = None,
     ) -> None:
@@ -73,6 +74,7 @@ class ProvenanceGuard(InterventionHandler):
         self.guarded = set(guarded_tools) if guarded_tools is not None else None
         self.proceed_at = proceed_at
         self.deny_below = deny_below
+        self.guard_if = guard_if  # e.g. only calls that send something to someone
         self.approver = approver
         self.on_decision = on_decision
         self.log: list[GuardDecision] = []
@@ -96,6 +98,8 @@ class ProvenanceGuard(InterventionHandler):
         if self.guarded is not None and name not in self.guarded:
             return Proceed()
         args = event.tool_use.get("input") or {}
+        if self.guard_if is not None and not self.guard_if(name, args):
+            return Proceed()
         asked, ms = self.classify(render_intent_state(event.agent.messages, name, args))
         verdict, reason = self.policy(asked)
         decision = GuardDecision(name, args, asked, verdict, reason, ms)

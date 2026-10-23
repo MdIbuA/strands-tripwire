@@ -19,7 +19,9 @@ action, and never the emails, pages or documents the agent read.** Injected text
 with a judge that never reads it. And Decider returns a number, not prose, so plain Python `if`
 statements decide what happens.
 
-![arena](docs/arena.jpg)
+| The attack the agent will read | Tripwire quarantines it live | Unsure? Ask the human |
+|---|---|---|
+| ![setup](docs/arena-setup.jpg) | ![arena](docs/arena.jpg) | ![confirm](docs/arena-confirm.jpg) |
 
 ## How it works
 
@@ -118,6 +120,8 @@ agent = Agent(
 
 - `guarded_tools`: the tools with side effects (send, share, pay, delete, deploy). Leave it
   `None` to guard every tool.
+- `guard_if=`: an optional `(tool_name, args) -> bool` to narrow it further. The demo gates only
+  calls that send something to someone, so a private calendar entry never needs a decision.
 - `approver=`: a callable that gets a `GuardDecision` and returns approve or reject. Use it to
   wire `Confirm` into Slack, a UI button or a CLI prompt. Without one, Strands' native
   interrupt pauses the agent.
